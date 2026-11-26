@@ -88,20 +88,26 @@ El Blueprint crea `DATA_ENCRYPTION_KEY`, `SESSION_SECRET` y `RATE_LIMIT_SECRET` 
 ### Preparación inicial
 
 1. En Atlas, crea un clúster **Free (M0)** y la base `securevault` en la región gratuita más cercana disponible a Render Ohio. Atlas limita Free a 512 MB, puede pausar clústeres tras 30 días sin conexiones y requiere autenticar y permitir las direcciones de origen. En el panel de Render, luego de crear el servicio, abre **Connect → Outbound** y agrega a la lista de acceso de Atlas los CIDR de salida que muestra Render. Son rangos compartidos por región; no abras `0.0.0.0/0`. Para inicializar desde tu computadora, agrega temporalmente tu IP pública actual y quítala al terminar.
-2. En Atlas, crea una cuenta de mantenimiento con `dbAdmin` únicamente sobre `securevault`. Crea otra cuenta para el proceso web con un rol personalizado en esa base: `find`, `insert`, `update` y `remove` para `usuarios`, `sesiones`, `notas` y `limitesAcceso`; `find` e `insert` para `eventosSeguridad`; además `listCollections` a nivel de base y `listIndexes` sobre las colecciones. No concedas al usuario web permisos DDL. La URI de Atlas negocia TLS; el cliente exige TLS en producción.
+2. En Atlas, crea una cuenta de mantenimiento con `dbAdmin` únicamente sobre `securevault` y el rol personalizado `securevaultAdminMaintenance`. Este último limita la promoción administrativa a `find` y `update` de `usuarios` e `insert` en `eventosSeguridad`. Crea otra cuenta para el proceso web con `securevaultRuntime`, rol personalizado que permite `find`, `insert`, `update` y `remove` en `usuarios`, `sesiones`, `notas` y `limitesAcceso`; `find` e `insert` en `eventosSeguridad`; además `listCollections` a nivel de base y `listIndexes` sobre las colecciones. No concedas al usuario web permisos DDL. La URI de Atlas negocia TLS; el cliente exige TLS en producción.
 3. Prepara las colecciones, validadores e índices una sola vez antes de habilitar la aplicación. Hazlo desde una consola local con acceso temporal permitido en Atlas. En PowerShell, desde la raíz del repositorio:
 
    ```powershell
    $env:NODE_ENV = 'production'
    $env:DB_NAME = 'securevault'
-   $env:MONGODB_ADMIN_URI = Read-Host 'Pegá la URI Atlas de mantenimiento'
-   npm run db:init
-   Remove-Item Env:MONGODB_ADMIN_URI
-   Remove-Item Env:NODE_ENV
-   Remove-Item Env:DB_NAME
+   $secureUri = Read-Host -AsSecureString 'Pegá la URI Atlas de mantenimiento'
+   $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureUri)
+   try {
+       $env:MONGODB_ADMIN_URI = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+       npm run db:init
+   } finally {
+       Remove-Item Env:MONGODB_ADMIN_URI -ErrorAction SilentlyContinue
+       [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+       Remove-Variable secureUri, ptr
+       Remove-Item Env:NODE_ENV, Env:DB_NAME -ErrorAction SilentlyContinue
+   }
    ```
 
-   `db:init` aplica validadores e índices y solo usa `MONGODB_ADMIN_URI` cuando `NODE_ENV=production`; requiere el rol de mantenimiento. No se ejecuta en cada arranque. El servicio web verifica que las colecciones e índices existan y no queda listo si falta esta preparación.
+   `db:init` aplica validadores e índices y solo usa `MONGODB_ADMIN_URI` cuando `NODE_ENV=production`; requiere `dbAdmin`. `npm run admin -- correo` requiere además `securevaultAdminMaintenance`. No compartas ninguna URI fuera de la terminal o del gestor de secretos. La inicialización no se ejecuta en cada arranque. El servicio web verifica que las colecciones e índices existan y no queda listo si falta esta preparación.
 4. En Render, selecciona **New → Blueprint**, conecta `1hellen0/laboratorio-2-`, rama `main`, y confirma el servicio `securevault-laboratorio` en plan **Free** y región Ohio. En el primer alta, pega la URI de la cuenta de ejecución en `MONGODB_URI` cuando Render lo solicite. No reutilices la URI de mantenimiento. `APP_ORIGIN` puede omitirse porque Render provee `RENDER_EXTERNAL_URL`. El Blueprint fija `autoDeployTrigger: checksPass`: cada push a `main` llega a producción solo si el check CI de GitHub concluye satisfactoriamente.
 5. Tras crear el servicio, permite sus rangos de salida en Atlas, espera el despliegue y comprueba `https://<subdominio-asignado>.onrender.com/health` y `/`. Render ofrece TLS y redirección de HTTP a HTTPS. El plan gratuito puede dormir tras 15 minutos sin tráfico, tardar cerca de un minuto en reactivarse y reiniciarse; por eso la URL sirve para la evaluación, pero no promete respuesta inmediata al primer acceso ni alta disponibilidad.
 
@@ -113,7 +119,7 @@ El Blueprint crea `DATA_ENCRYPTION_KEY`, `SESSION_SECRET` y `RATE_LIMIT_SECRET` 
 | `MONGODB_URI` | Render Environment: URI Atlas de la cuenta web con rol personalizado. |
 | `DATA_ENCRYPTION_KEY`, `SESSION_SECRET`, `RATE_LIMIT_SECRET` | Render los genera en el primer Blueprint y conserva entre despliegues; respalda la llave de cifrado de forma cifrada y restringida. |
 | `APP_ORIGIN` | Opcional en Render; si falta, se usa `RENDER_EXTERNAL_URL`. En local usa `.env`. |
-| `MONGODB_ADMIN_URI` | Solo consola de mantenimiento para `npm run db:init` o `npm run admin`; nunca en el servicio web. |
+| `MONGODB_ADMIN_URI` | URI de cuenta Atlas con `dbAdmin` y `securevaultAdminMaintenance`; solo consola local para inicializar o promover un usuario, nunca el servicio web. |
 | `RESEND_API_KEY`, `MAIL_FROM` | Opcionales mientras se evalúan registro, notas e ingreso. Para habilitar recuperación, agrega la clave de Resend y un remitente de un dominio verificado en Render Environment. |
 
 La revisión local encontró `.env` con variables de aplicación, pero sin `RESEND_API_KEY` ni `MAIL_FROM`; eso no confirma si existen en el panel de Resend. Sin ambas variables y un remitente habilitado, el servicio inicia, pero el correo de recuperación no se entrega. Resend solo puede comprobarse tras configurar y verificar el dominio/remitente y probar un envío.
