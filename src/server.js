@@ -1,6 +1,6 @@
 import { createApp } from './app.js';
 import { configFrom } from './config.js';
-import { connectMongo, prepareDatabase } from './db.js';
+import { connectMongo, verifyDatabase } from './db.js';
 import { delivery } from './mail.js';
 
 const config = configFrom(process.env);
@@ -10,7 +10,7 @@ const client = connectMongo(process.env.MONGODB_URI, config.prod);
 try {
   await client.connect();
   const db = client.db(databaseName);
-  await prepareDatabase(db);
+  await verifyDatabase(db);
   const app = await createApp({ db, config, deliver: delivery(config, process.env) });
   const server = app.listen(config.port, '0.0.0.0', () => {
     console.log(JSON.stringify({ tipo: 'inicio', resultado: 'listo', puerto: config.port, entorno: config.prod ? 'production' : 'development' }));

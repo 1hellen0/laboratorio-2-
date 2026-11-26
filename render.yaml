@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: securevault-laboratorio
+    runtime: node
+    plan: free
+    region: ohio
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_NAME
+        value: securevault
+      - key: TRUST_PROXY_HOPS
+        value: "1"
+      - key: DATA_KEY_VERSION
+        value: "1"
+      - key: DATA_ENCRYPTION_KEY
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: RATE_LIMIT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false

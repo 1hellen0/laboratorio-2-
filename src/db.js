@@ -41,3 +41,26 @@ export async function prepareDatabase(db) {
   await db.collection('eventosSeguridad').createIndex({ocurridoEn:-1,_id:-1});
   await db.collection('eventosSeguridad').createIndex({ocurridoEn:1},{expireAfterSeconds:2592000});
 }
+
+export async function verifyDatabase(db) {
+  const collections = new Set((await db.listCollections({}, {nameOnly:true}).toArray()).map(item => item.name));
+  const expected = ['usuarios','sesiones','notas','eventosSeguridad','limitesAcceso'];
+  const missing = expected.filter(name => !collections.has(name));
+  if (missing.length) throw Error('Falta inicializar la base de datos. Ejecutá npm run db:init.');
+
+  const indexes = {
+    usuarios: [[{correo:1},{unique:true}], [{'recuperacion.hashToken':1},{unique:true}]],
+    sesiones: [[{usuarioId:1},{}],[{expiraEn:1},{expireAfterSeconds:0}]],
+    notas: [[{propietarioId:1,posicion:1},{unique:true}],[{propietarioId:1,actualizadaEn:-1},{}]],
+    eventosSeguridad: [[{ocurridoEn:-1,_id:-1},{}],[{ocurridoEn:1},{expireAfterSeconds:2592000}]],
+    limitesAcceso: [[{expiraEn:1},{expireAfterSeconds:0}]]
+  };
+  for (const [name, required] of Object.entries(indexes)) {
+    const existing = await db.collection(name).listIndexes().toArray();
+    for (const [key, options] of required) {
+      const match = existing.find(index => JSON.stringify(index.key) === JSON.stringify(key));
+      if (!match || Object.entries(options).some(([option, value]) => match[option] !== value))
+        throw Error('Falta un índice requerido en ' + name + '. Ejecutá npm run db:init.');
+    }
+  }
+}

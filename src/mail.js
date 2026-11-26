@@ -4,8 +4,8 @@ import {resolve,join} from 'node:path';
 
 export function delivery(config, env) {
   if(config.prod) {
-    if(!env.RESEND_API_KEY || !env.MAIL_FROM) throw Error('Falta configuración del correo de producción');
     return async({correo,enlace})=>{
+      if(!env.RESEND_API_KEY || !env.MAIL_FROM) throw Error('Correo de recuperación no configurado');
       const response=await fetch('https://api.resend.com/emails',{method:'POST',redirect:'error',
         headers:{Authorization:'Bearer '+env.RESEND_API_KEY,'Content-Type':'application/json'},
         signal:AbortSignal.timeout(5000),body:JSON.stringify({from:env.MAIL_FROM,to:[correo],

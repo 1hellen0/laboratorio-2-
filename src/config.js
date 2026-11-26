@@ -8,8 +8,9 @@ export function keyBytes(value, name) {
 
 export function configFrom(env) {
   const prod = env.NODE_ENV === 'production';
-  const origin = new URL(env.APP_ORIGIN || 'http://127.0.0.1:3000');
-  if (origin.origin !== (env.APP_ORIGIN || origin.origin) || (prod && origin.protocol !== 'https:'))
+  const originValue = env.APP_ORIGIN || env.RENDER_EXTERNAL_URL || 'http://127.0.0.1:3000';
+  const origin = new URL(originValue);
+  if (origin.origin !== originValue || (prod && origin.protocol !== 'https:'))
     throw Error('APP_ORIGIN debe ser un origen válido, HTTPS en producción');
   const version = Number(env.DATA_KEY_VERSION || 1);
   if (!Number.isSafeInteger(version) || version < 1) throw Error('DATA_KEY_VERSION inválida');
