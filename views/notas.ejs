@@ -1,0 +1,6 @@
+<%- include('header',{title:'Mis notas'}) %>
+<section><h2>Nueva nota</h2><form method="post" action="/api/notas" data-next="/notas"><label>Contenido <textarea name="contenido" required></textarea></label><small>Hasta 8192 bytes por nota.</small><button>Guardar nota</button></form></section>
+<section><h2>Notas guardadas (<%= notes.length %>/50)</h2>
+<% if(!notes.length){ %><p>Todavía no tenés notas.</p><% } %>
+<ul><% for(const note of notes){ %><li><a href="/notas/<%= note._id %>">Nota del <%= note.actualizadaEn.toLocaleString('es-CR',{timeZone:'America/Costa_Rica'}) %> · <%= note._id.toString().slice(-4) %></a></li><% } %></ul></section>
+<%- include('footer') %>

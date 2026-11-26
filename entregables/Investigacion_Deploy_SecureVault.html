@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Despliegue de SecureVault · Fase 0</title>
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+:root { --ink: #172a34; --muted: #435962; --accent: #105d61; --line: #cad7d8; --pale: #eef5f3; }
+html, body { margin: 0; color: var(--ink); }
+body { background: #e6e9e9; font: 11.3pt/1.37 "Segoe UI", Arial, sans-serif; }
+.sheet { width: 210mm; min-height: 296.7mm; background: white; margin: 7mm auto; padding: 12mm 15mm 9mm; display: flex; flex-direction: column; }
+.topline, footer { display: flex; justify-content: space-between; align-items: baseline; font-size: 9.3pt; color: var(--muted); }
+.topline { padding-bottom: 2.5mm; border-bottom: 1.4pt solid var(--accent); font-weight: 600; }
+footer { margin-top: auto; padding-top: 2.3mm; border-top: .6pt solid var(--line); }
+main { padding-bottom: 4mm; }
+h1, h2, h3, p, figure, ol, dl, dd { margin: 0; }
+h1, h2 { font-family: Georgia, "Times New Roman", serif; font-weight: normal; letter-spacing: -.35pt; }
+h1 { font-size: 29pt; line-height: 1.12; margin: 4mm 0; }
+h2 { font-size: 22pt; line-height: 1.13; margin: 5mm 0; }
+h3 { font-size: 13.3pt; line-height: 1.22; font-weight: 650; margin: 4.5mm 0 1.5mm; }
+h3 .num { color: var(--accent); margin-right: .9mm; }
+p + p { margin-top: 1.8mm; }
+strong, dt { font-weight: 650; }
+a { color: inherit; }
+.cite { font: 600 8.9pt/1 "Segoe UI",Arial,sans-serif; color: var(--accent); text-decoration: none; white-space: nowrap; }
+code { font: .9em Consolas, "Courier New", monospace; color: #203e49; }
+.summary { border-left: 2.2pt solid var(--accent); padding: 2mm 0 2mm 3.3mm; }
+.summary h3 { margin: 0 0 1mm; font-size: 11.6pt; color: var(--accent); }
+.options { margin: 0; }
+.options p + p { margin-top: 1mm; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 10.3pt; line-height: 1.3; }
+th, td { padding: 2mm 2.2mm; text-align: left; vertical-align: top; border-bottom: .55pt solid var(--line); }
+thead th { background: #1c454b; color: white; font-size: 10.4pt; font-weight: 600; }
+tbody th { font-weight: 600; background: var(--pale); color: #214349; }
+tbody td + td { border-left: .5pt solid var(--line); }
+.plan-table th:first-child { width: 18%; }
+.plan-table col:not(:first-child) { width: 27.33%; }
+.plan-table .cite { font-size: 8.4pt; }
+.table-note { font-size: 10pt; color: var(--muted); margin: 1.6mm 0 0; }
+figure { background: var(--pale); padding: 3.6mm 3.5mm; border-top: .8pt solid #a3bcb9; border-bottom: .8pt solid #a3bcb9; }
+figure figcaption { font-size: 10.5pt; font-weight: 650; margin-bottom: 2.8mm; color: var(--accent); }
+.flow { display: grid; grid-template-columns: 1fr 13mm 1.25fr 14mm 1.3fr 13mm 1.15fr; align-items: center; text-align: center; }
+.node { border: .8pt solid #779a9b; border-radius: 2mm; background: white; padding: 2.8mm .5mm; line-height: 1.2; }
+.node b { font-size: 10.5pt; font-weight: 650; }
+.node span { display:block; font-size: 9.3pt; margin-top: 1mm; }
+.edge { color: var(--accent); font-size: 14pt; line-height: 1; }
+.edge span { display: block; font-size: 8.3pt; line-height: 1.2; font-weight: 600; }
+.flow-note { margin-top: 2.6mm; font-size: 10pt; }
+.steps { padding-left: 6mm; }
+.steps li { padding-left: .8mm; margin: 1mm 0; }
+.steps li::marker { color: var(--accent); font-weight: 650; }
+.checks p { margin: 1.5mm 0; }
+.env-table th:first-child { width: 19%; }
+.env-table td, .env-table th { padding-top: 1.45mm; padding-bottom: 1.45mm; }
+thead .cite { color: white; }
+.sheet:nth-child(3) h3 { margin-top: 3.5mm; }
+.env-table th:nth-child(2) { width: 28%; }
+.refs { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; }
+.ref { display: grid; grid-template-columns: 6.7mm minmax(0,1fr); margin-bottom: 2.1mm; font-size: 9.7pt; line-height: 1.14; break-inside: avoid; }
+.ref .index { color: var(--accent); font-weight: 600; }
+.ref b { font-weight: 600; }
+.url { display: block; font-size: 9pt; line-height: 1.16; color: #294a59; overflow-wrap: anywhere; text-decoration: none; margin-top: .45mm; }
+.refdate { margin: -2mm 0 4mm; color: var(--muted); }
+@media print {
+  body { background: white; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .sheet { margin: 0; break-after: page; }
+  .sheet:last-child { break-after: auto; }
+}
+@media screen and (max-width: 800px) {
+  .sheet { width: 100%; min-height: 0; margin: 0 0 3mm; padding: 5mm; }
+  .refs { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<section class="sheet" aria-label="Página 1">
+<header class="topline"><span>Laboratorio 2 · SecureVault</span><span>Fase 0 · Investigación de despliegue</span></header>
+<main>
+<h1>Despliegue de SecureVault</h1>
+<div class="summary"><h3>Resumen ejecutivo</h3>
+<p>Para que el docente consulte las notas de prueba por HTTPS, proponemos Render Free para la aplicación y MongoDB Atlas Free para los datos. Ambos cuestan USD 0 dentro de sus cuotas. El enlace seguiría disponible después de días sin visitas, con una espera de cerca de un minuto mientras Render reactiva la aplicación. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-12" aria-label="Referencia 12">12</a>, <a class="cite" href="#ref-13" aria-label="Referencia 13">13</a>]</span></p></div>
+<h3><span class="num">1.</span> PaaS, contenedores y VPS</h3>
+<div class="options"><p><strong>PaaS.</strong> El proveedor opera el sistema y supervisa el proceso. El equipo despliega con menos trabajo, a cambio de aceptar límites de configuración. Se paga por instancias, almacenamiento y tráfico. <span class="cite">[<a class="cite" href="#ref-1" aria-label="Referencia 1">1</a>, <a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-5" aria-label="Referencia 5">5</a>]</span></p>
+<p><strong>Contenedor.</strong> La imagen fija Node.js y sus dependencias, lo que facilita reproducir el entorno. El equipo controla y actualiza esa imagen. El contenedor puede ejecutarse en un PaaS o en un VPS. El alojamiento y el registro de imágenes determinan el costo. <span class="cite">[<a class="cite" href="#ref-2" aria-label="Referencia 2">2</a>, <a class="cite" href="#ref-19" aria-label="Referencia 19">19</a>]</span></p>
+<p><strong>VPS/IaaS.</strong> El equipo controla el sistema operativo, la red y el proxy, y asume parches, copias y recuperación. Se pagan la máquina virtual, el disco y, según el plan, la transferencia. <span class="cite">[<a class="cite" href="#ref-1" aria-label="Referencia 1">1</a>]</span></p></div>
+<h3><span class="num">2.</span> Tres opciones para alojar Node.js</h3>
+<table class="plan-table"><colgroup><col><col><col><col></colgroup>
+<thead><tr><th scope="col">Criterio</th><th scope="col">Render Free</th><th scope="col">Koyeb Free</th><th scope="col">Heroku Basic educativo</th></tr></thead><tbody>
+<tr><th scope="row">Beneficio y acceso</th><td>Cuenta Render, espacio Hobby e instancia Free. Beneficio mensual abierto. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-5" aria-label="Referencia 5">5</a>]</span></td><td>Cuenta y tarjeta validada. En Starter se incluye una instancia Free por organización. Pro tiene cargo. <span class="cite">[<a class="cite" href="#ref-6" aria-label="Referencia 6">6</a>, <a class="cite" href="#ref-7" aria-label="Referencia 7">7</a>]</span></td><td>Cuenta personal, 18 años o más, GitHub Student Developer Pack aprobado y tarjeta. Crédito de USD 13/mes por 24 meses. <span class="cite">[<a class="cite" href="#ref-9" aria-label="Referencia 9">9</a>]</span></td></tr>
+<tr><th scope="row">Aplicación</th><td>USD 0. 750 h/mes por espacio, 5 GB de salida y 500 min de compilación al mes. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-5" aria-label="Referencia 5">5</a>]</span></td><td>USD 0. Una instancia web con 0,1 vCPU, 512 MB de RAM y 2 GB de SSD local. <span class="cite">[<a class="cite" href="#ref-6" aria-label="Referencia 6">6</a>, <a class="cite" href="#ref-7" aria-label="Referencia 7">7</a>]</span></td><td>Un dyno Basic cuesta USD 7/mes, con 0,5 GB de RAM. El crédito cubre el cargo. <span class="cite">[<a class="cite" href="#ref-9" aria-label="Referencia 9">9</a>, <a class="cite" href="#ref-10" aria-label="Referencia 10">10</a>]</span></td></tr>
+<tr><th scope="row">Inactividad</th><td>Duerme a los 15 min. Una petición lo reactiva en ~1 min. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>]</span></td><td>Duerme al cabo de una hora sin tráfico. <span class="cite">[<a class="cite" href="#ref-6" aria-label="Referencia 6">6</a>]</span></td><td>Basic permanece activo aunque no reciba visitas. <span class="cite">[<a class="cite" href="#ref-10" aria-label="Referencia 10">10</a>]</span></td></tr>
+<tr><th scope="row">Base de datos</th><td>PostgreSQL Free cuesta USD 0, tiene 1 GB y vence a los 30 días. Admite una BD externa. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>]</span></td><td>PostgreSQL Free cuesta USD 0, con 1 GB y 5 h de cómputo activo al mes. <span class="cite">[<a class="cite" href="#ref-7" aria-label="Referencia 7">7</a>, <a class="cite" href="#ref-8" aria-label="Referencia 8">8</a>]</span></td><td>Postgres Essential-0 cuesta USD 5/mes por 1 GB y 20 conexiones. Con Basic, USD 12/mes cubiertos. <span class="cite">[<a class="cite" href="#ref-9" aria-label="Referencia 9">9</a>, <a class="cite" href="#ref-10" aria-label="Referencia 10">10</a>]</span></td></tr>
+<tr><th scope="row">HTTPS y regiones de la app</th><td>TLS automático. Oregón, Ohio, Virginia, Fráncfort y Singapur. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-4" aria-label="Referencia 4">4</a>]</span></td><td>HTTPS automático. Se elige Washington D. C. o Fráncfort. <span class="cite">[<a class="cite" href="#ref-6" aria-label="Referencia 6">6</a>, <a class="cite" href="#ref-8" aria-label="Referencia 8">8</a>]</span></td><td>TLS gestionado. En Common Runtime, Estados Unidos (<code>us</code>) o Europa (<code>eu</code>). <span class="cite">[<a class="cite" href="#ref-10" aria-label="Referencia 10">10</a>, <a class="cite" href="#ref-11" aria-label="Referencia 11">11</a>]</span></td></tr>
+</tbody></table>
+<p class="table-note">Al agotar las 750 h, Render suspende la aplicación hasta el mes siguiente. Heroku cobra los excedentes y el uso posterior al beneficio educativo. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-9" aria-label="Referencia 9">9</a>]</span></p>
+</main>
+<footer><span>SecureVault · Propuesta de diseño</span><span>1 / 4</span></footer>
+</section>
+<section class="sheet" aria-label="Página 2">
+<header class="topline"><span>Laboratorio 2 · SecureVault</span><span>Fase 0 · Investigación de despliegue</span></header>
+<main>
+<h2>Arquitectura y operación</h2>
+<figure><figcaption>Figura 1. Recorrido de una solicitud de lectura</figcaption>
+<div class="flow" role="img" aria-label="El navegador llega por HTTPS al proxy de Render. Este reenvía por HTTP interno a Express, que consulta MongoDB Atlas mediante TLS.">
+<div class="node"><b>Navegador</b><span>Docente</span></div><div class="edge"><span>HTTPS</span>→</div>
+<div class="node"><b>Proxy Render</b><span>Termina TLS</span></div><div class="edge"><span>HTTP<br>interno</span>→</div>
+<div class="node"><b>Express</b><span>Autoriza y cifra</span></div><div class="edge"><span>TLS</span>→</div>
+<div class="node"><b>Atlas Free</b><span>Notas cifradas</span></div></div>
+<p class="flow-note">Express verificaría la sesión y el propietario antes de descifrar la nota. Atlas conservaría las sesiones aunque Render reinicie Node.js. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-19" aria-label="Referencia 19">19</a>, <a class="cite" href="#ref-26" aria-label="Referencia 26">26</a>]</span></p></figure>
+<p style="margin-top:3mm"><strong>Elección para la evaluación.</strong> Ubicaríamos la aplicación en Virginia y Atlas Free en AWS Norte de Virginia. Sus 512 MB bastarían para notas de prueba. Atlas evita el vencimiento de PostgreSQL Free en Render y el límite de cinco horas de Koyeb. Heroku Basic eliminaría la espera inicial, pero exige la aprobación previa del crédito para cubrir el costo. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-4" aria-label="Referencia 4">4</a>, <a class="cite" href="#ref-7" aria-label="Referencia 7">7</a>, <a class="cite" href="#ref-9" aria-label="Referencia 9">9</a>, <a class="cite" href="#ref-10" aria-label="Referencia 10">10</a>, <a class="cite" href="#ref-12" aria-label="Referencia 12">12</a>, <a class="cite" href="#ref-31" aria-label="Referencia 31">31</a>]</span></p>
+<h3><span class="num">3.</span> Variables de entorno y secretos</h3>
+<p><code>NODE_ENV</code> configura el entorno. Un archivo <code>.env</code> local guarda valores legibles y debe excluirse de Git. Una copia expone los secretos. Un gestor restringe su lectura y facilita la rotación y la auditoría. <span class="cite">[<a class="cite" href="#ref-14" aria-label="Referencia 14">14</a>, <a class="cite" href="#ref-15" aria-label="Referencia 15">15</a>]</span></p>
+<p>En el panel de Render guardaríamos <code>DATA_ENCRYPTION_KEY</code> (32 bytes aleatorios), <code>MONGODB_URI</code> y <code>SESSION_SECRET</code>. Node.js los leería al iniciar. El repositorio documentaría solo sus nombres. Para notas y perfil usaríamos AES-256-GCM con IV único, etiqueta y versión de llave. Al rotarla, se escribiría con la nueva y se conservaría la anterior hasta recifrar los datos. Perder la llave y su respaldo haría irrecuperables las notas que la usan. <span class="cite">[<a class="cite" href="#ref-14" aria-label="Referencia 14">14</a>, <a class="cite" href="#ref-15" aria-label="Referencia 15">15</a>]</span></p>
+<h3><span class="num">4.</span> Certificados TLS, Let’s Encrypt y HSTS</h3>
+<p>El certificado vincula un dominio con su clave pública. El navegador valida nombre, vigencia y cadena de confianza. Let’s Encrypt comprueba el control del dominio mediante ACME y automatiza emisión y renovación. Render gestionaría el certificado y redirigiría HTTP a HTTPS. Al recibir <code>Strict-Transport-Security</code> por HTTPS, el navegador usará HTTPS en visitas posteriores durante <code>max-age</code>. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-16" aria-label="Referencia 16">16</a>, <a class="cite" href="#ref-17" aria-label="Referencia 17">17</a>, <a class="cite" href="#ref-19" aria-label="Referencia 19">19</a>]</span></p>
+<h3><span class="num">5.</span> Proxy inverso y <code>trust proxy</code> en Express</h3>
+<p>Un proxy inverso como Nginx o Caddy recibe la conexión y la reenvía a Node.js. En Render lo hace el balanceador. Express necesita identificar la IP del cliente y el protocolo original para limitar intentos y emitir cookies <code>Secure</code>. Se usaría <code>app.set('trust proxy', 1)</code> solo al verificar que todas las rutas tienen un salto confiable y que este sanea <code>X-Forwarded-For</code> y <code>X-Forwarded-Proto</code>. Con rutas distintas se confiaría en las IP o subredes confirmadas del proxy. <span class="cite">[<a class="cite" href="#ref-18" aria-label="Referencia 18">18</a>, <a class="cite" href="#ref-19" aria-label="Referencia 19">19</a>]</span></p>
+<h3><span class="num">6.</span> ¿Quién reinicia Node.js?</h3>
+<p>En un VPS, PM2 relanza procesos Node.js y <code>systemd</code> puede iniciar el servicio al arrancar Linux y reiniciarlo si falla. Un contenedor requiere una política de reinicio o un orquestador. En Render, la plataforma vigilaría <code>GET /health</code> y reiniciaría la instancia activa tras 60 s de fallos consecutivos. <span class="cite">[<a class="cite" href="#ref-20" aria-label="Referencia 20">20</a>, <a class="cite" href="#ref-21" aria-label="Referencia 21">21</a>]</span></p>
+</main>
+<footer><span>SecureVault · Propuesta de diseño</span><span>2 / 4</span></footer>
+</section>
+<section class="sheet" aria-label="Página 3">
+<header class="topline"><span>Laboratorio 2 · SecureVault</span><span>Fase 0 · Investigación de despliegue</span></header>
+<main>
+<h2>Despliegue y verificación</h2>
+<h3><span class="num">7.</span> Del cambio aprobado a producción</h3>
+<p>La integración continua (CI) valida cambios. El despliegue continuo (CD) publica los que pasan las pruebas. <span class="cite">[<a class="cite" href="#ref-22" aria-label="Referencia 22">22</a>, <a class="cite" href="#ref-24" aria-label="Referencia 24">24</a>]</span></p>
+<ol class="steps"><li><strong>Validar.</strong> Con Node.js LTS fijado, GitHub Actions validaría cada propuesta y envío a <code>main</code> con <code>npm ci</code> con el <code>package-lock.json</code> versionado, <code>npm test</code> (sesiones, permisos y cifrado) y <code>npm audit --audit-level=high</code>. Un fallo o un hallazgo alto o crítico bloquearía el despliegue. <span class="cite">[<a class="cite" href="#ref-22" aria-label="Referencia 22">22</a>, <a class="cite" href="#ref-23" aria-label="Referencia 23">23</a>]</span></li>
+<li><strong>Publicar.</strong> Tras revisar y fusionar en <code>main</code>, solo si las tres verificaciones pasan, Actions invocaría el <em>deploy hook</em> de Render con el SHA aprobado en <code>ref</code>. Su URL se guardaría como secreto en GitHub. El despliegue directo por envío quedaría desactivado. <span class="cite">[<a class="cite" href="#ref-24" aria-label="Referencia 24">24</a>]</span></li>
+<li><strong>Habilitar tráfico.</strong> Render comprobaría <code>/health</code> antes de servir la nueva versión. Si falla el arranque, mantendría la anterior. <span class="cite">[<a class="cite" href="#ref-21" aria-label="Referencia 21">21</a>, <a class="cite" href="#ref-24" aria-label="Referencia 24">24</a>]</span></li></ol>
+<h3><span class="num">8.</span> Base gestionada y protección de la conexión</h3>
+<p>Render y Koyeb ofrecen PostgreSQL relacional. Atlas gestiona documentos. El cliente de MongoDB verificaría el certificado TLS y el nombre del servidor. Atlas aceptaría solo los rangos de salida de Render. Al ser compartidos por región, también se exigiría una credencial robusta y exclusiva. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-7" aria-label="Referencia 7">7</a>, <a class="cite" href="#ref-12" aria-label="Referencia 12">12</a>, <a class="cite" href="#ref-25" aria-label="Referencia 25">25</a>, <a class="cite" href="#ref-26" aria-label="Referencia 26">26</a>]</span></p>
+<p>La aplicación recibiría permisos por colección. Por ejemplo, en la bitácora solo podría insertar eventos. La administración del clúster usaría otra identidad. <span class="cite">[<a class="cite" href="#ref-13" aria-label="Referencia 13">13</a>, <a class="cite" href="#ref-26" aria-label="Referencia 26">26</a>]</span></p>
+<h3><span class="num">9.</span> Configuración de desarrollo y producción</h3>
+<table class="env-table"><thead><tr><th>Control</th><th>Desarrollo</th><th>Producción propuesta <span class="cite">[<a class="cite" href="#ref-18" aria-label="Referencia 18">18</a>, <a class="cite" href="#ref-20" aria-label="Referencia 20">20</a>, <a class="cite" href="#ref-27" aria-label="Referencia 27">27</a>]</span></th></tr></thead><tbody>
+<tr><th>Entorno</th><td><code>development</code>, recarga local.</td><td><code>NODE_ENV=production</code>, versión fijada.</td></tr>
+<tr><th>Logs y errores</th><td>Detalle y trazas con datos ficticios.</td><td>Logs JSON sin notas, tokens ni claves. Detalle en el servidor y error genérico al cliente.</td></tr>
+<tr><th>CORS</th><td>Origen local explícito si la interfaz usa otro puerto.</td><td>Interfaz y API en el mismo origen. Si se separan, autorizar solo el origen exacto de la interfaz.</td></tr>
+<tr><th>Cookies</th><td>Cookie local de prueba, adaptada a HTTP local.</td><td><code>Secure</code>, <code>HttpOnly</code> y <code>SameSite=Lax</code>. Renovar el identificador al entrar e invalidar la sesión al salir.</td></tr>
+</tbody></table>
+<h3><span class="num">10.</span> Comprobaciones posteriores al despliegue</h3>
+<div class="checks"><p><strong>Herramientas.</strong> ZAP Baseline recorrería la URL propia con reglas pasivas. Security Headers calificaría HSTS y CSP (meta global, A o superior). SSL Labs evaluaría el certificado y los protocolos TLS. <code>npm audit</code> identificaría dependencias con avisos conocidos. Se archivarían los informes con fecha y SHA. <span class="cite">[<a class="cite" href="#ref-23" aria-label="Referencia 23">23</a>, <a class="cite" href="#ref-28" aria-label="Referencia 28">28</a>, <a class="cite" href="#ref-29" aria-label="Referencia 29">29</a>, <a class="cite" href="#ref-30" aria-label="Referencia 30">30</a>]</span></p>
+<p><strong>Acceso del docente.</strong> Probar redirección HTTPS, <code>/health</code> sin datos internos, notas ajenas inaccesibles (403/404), rechazo de inyección y límite de intentos de acceso (429). Revisar cuotas y probar la URL tras el reposo. Si Atlas se pausó tras 30 días sin conexiones, reanudarlo. Entregar la URL y las credenciales de usuario y administrador por canal privado. <span class="cite">[<a class="cite" href="#ref-3" aria-label="Referencia 3">3</a>, <a class="cite" href="#ref-13" aria-label="Referencia 13">13</a>, <a class="cite" href="#ref-27" aria-label="Referencia 27">27</a>]</span></p></div>
+</main>
+<footer><span>SecureVault · Propuesta de diseño</span><span>3 / 4</span></footer>
+</section>
+<section class="sheet" aria-label="Página 4">
+<header class="topline"><span>Laboratorio 2 · SecureVault</span><span>Fase 0 · Investigación de despliegue</span></header>
+<main>
+<h2>Referencias</h2>
+<p class="refdate">Fuentes primarias consultadas el <strong>25 de noviembre de 2026</strong>.</p>
+<div class="refs"><div>
+<div id="ref-1" class="ref"><span class="index">[1]</span><div><b>AWS · Modelos de servicio</b><a class="url" href="https://aws.amazon.com/types-of-cloud-computing/">https://aws.amazon.com/types-of-cloud-computing/</a></div></div>
+<div id="ref-2" class="ref"><span class="index">[2]</span><div><b>Docker · Contenedores e imágenes</b><a class="url" href="https://docs.docker.com/learn/content/what-is-a-container/">https://docs.docker.com/learn/content/what-is-a-container/</a></div></div>
+<div id="ref-3" class="ref"><span class="index">[3]</span><div><b>Render · Límites de las instancias Free</b><a class="url" href="https://render.com/docs/free">https://render.com/docs/free</a></div></div>
+<div id="ref-4" class="ref"><span class="index">[4]</span><div><b>Render · Regiones</b><a class="url" href="https://render.com/docs/regions">https://render.com/docs/regions</a></div></div>
+<div id="ref-5" class="ref"><span class="index">[5]</span><div><b>Render · Cuotas del plan Hobby</b><a class="url" href="https://render.com/articles/how-much-does-cloud-application-hosting-cost-for-small-businesses">https://render.com/articles/how-much-does-cloud-application-hosting-cost-for-small-businesses</a></div></div>
+<div id="ref-6" class="ref"><span class="index">[6]</span><div><b>Koyeb · Instancias Free</b><a class="url" href="https://www.koyeb.com/docs/reference/instances">https://www.koyeb.com/docs/reference/instances</a></div></div>
+<div id="ref-7" class="ref"><span class="index">[7]</span><div><b>Koyeb · Acceso, cuotas y facturación</b><a class="url" href="https://www.koyeb.com/docs/faqs/pricing">https://www.koyeb.com/docs/faqs/pricing</a></div></div>
+<div id="ref-8" class="ref"><span class="index">[8]</span><div><b>Koyeb · Tarifas y HTTPS</b><a class="url" href="https://www.koyeb.com/pricing">https://www.koyeb.com/pricing</a></div></div>
+<div id="ref-9" class="ref"><span class="index">[9]</span><div><b>Heroku · Beneficio para estudiantes de GitHub</b><a class="url" href="https://www.heroku.com/github-students/">https://www.heroku.com/github-students/</a></div></div>
+<div id="ref-10" class="ref"><span class="index">[10]</span><div><b>Heroku · Dynos y planes PostgreSQL</b><a class="url" href="https://www.heroku.com/pricing/">https://www.heroku.com/pricing/</a></div></div>
+<div id="ref-11" class="ref"><span class="index">[11]</span><div><b>Heroku · Regiones de Common Runtime</b><a class="url" href="https://devcenter.heroku.com/articles/regions">https://devcenter.heroku.com/articles/regions</a></div></div>
+<div id="ref-12" class="ref"><span class="index">[12]</span><div><b>MongoDB · Precios de Atlas</b><a class="url" href="https://www.mongodb.com/pricing">https://www.mongodb.com/pricing</a></div></div>
+<div id="ref-13" class="ref"><span class="index">[13]</span><div><b>MongoDB · Límites de Atlas Free</b><a class="url" href="https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/">https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/</a></div></div>
+<div id="ref-14" class="ref"><span class="index">[14]</span><div><b>Render · Variables y secretos</b><a class="url" href="https://render.com/docs/configure-environment-variables">https://render.com/docs/configure-environment-variables</a></div></div>
+<div id="ref-15" class="ref"><span class="index">[15]</span><div><b>OWASP · Gestión de secretos</b><a class="url" href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></div></div>
+<div id="ref-16" class="ref"><span class="index">[16]</span><div><b>Let’s Encrypt · Emisión y renovación con ACME</b><a class="url" href="https://letsencrypt.org/how-it-works/">https://letsencrypt.org/how-it-works/</a></div></div>
+</div>
+<div>
+<div id="ref-17" class="ref"><span class="index">[17]</span><div><b>IETF · RFC 6797, política HSTS</b><a class="url" href="https://datatracker.ietf.org/doc/html/rfc6797">https://datatracker.ietf.org/doc/html/rfc6797</a></div></div>
+<div id="ref-18" class="ref"><span class="index">[18]</span><div><b>Express · Confianza en proxies</b><a class="url" href="https://expressjs.com/en/guide/behind-proxies/">https://expressjs.com/en/guide/behind-proxies/</a></div></div>
+<div id="ref-19" class="ref"><span class="index">[19]</span><div><b>Render · Servicio web y terminación TLS</b><a class="url" href="https://render.com/docs/web-services">https://render.com/docs/web-services</a></div></div>
+<div id="ref-20" class="ref"><span class="index">[20]</span><div><b>Express · Rendimiento y supervisión</b><a class="url" href="https://expressjs.com/en/advanced/best-practice-performance/">https://expressjs.com/en/advanced/best-practice-performance/</a></div></div>
+<div id="ref-21" class="ref"><span class="index">[21]</span><div><b>Render · Comprobaciones de salud</b><a class="url" href="https://render.com/docs/health-checks">https://render.com/docs/health-checks</a></div></div>
+<div id="ref-22" class="ref"><span class="index">[22]</span><div><b>GitHub · Integración continua con Node.js</b><a class="url" href="https://docs.github.com/en/actions/tutorials/build-and-test-code/nodejs">https://docs.github.com/en/actions/tutorials/build-and-test-code/nodejs</a></div></div>
+<div id="ref-23" class="ref"><span class="index">[23]</span><div><b>npm · Auditoría y umbral de fallo</b><a class="url" href="https://docs.npmjs.com/cli/v11/commands/npm-audit/">https://docs.npmjs.com/cli/v11/commands/npm-audit/</a></div></div>
+<div id="ref-24" class="ref"><span class="index">[24]</span><div><b>Render · Despliegue de un commit por hook</b><a class="url" href="https://render.com/docs/deploy-hooks">https://render.com/docs/deploy-hooks</a></div></div>
+<div id="ref-25" class="ref"><span class="index">[25]</span><div><b>Render · Rangos de IP de salida</b><a class="url" href="https://render.com/docs/outbound-ip-addresses">https://render.com/docs/outbound-ip-addresses</a></div></div>
+<div id="ref-26" class="ref"><span class="index">[26]</span><div><b>MongoDB · Seguridad de los clústeres Atlas</b><a class="url" href="https://www.mongodb.com/docs/atlas/setup-cluster-security/">https://www.mongodb.com/docs/atlas/setup-cluster-security/</a></div></div>
+<div id="ref-27" class="ref"><span class="index">[27]</span><div><b>Express · Seguridad en producción</b><a class="url" href="https://expressjs.com/en/advanced/best-practice-security/">https://expressjs.com/en/advanced/best-practice-security/</a></div></div>
+<div id="ref-28" class="ref"><span class="index">[28]</span><div><b>ZAP · Análisis de línea base</b><a class="url" href="https://www.zaproxy.org/docs/docker/baseline-scan/">https://www.zaproxy.org/docs/docker/baseline-scan/</a></div></div>
+<div id="ref-29" class="ref"><span class="index">[29]</span><div><b>Security Headers · Cabeceras HTTP</b><a class="url" href="https://securityheaders.com/">https://securityheaders.com/</a></div></div>
+<div id="ref-30" class="ref"><span class="index">[30]</span><div><b>Qualys SSL Labs · SSL Server Test</b><a class="url" href="https://www.ssllabs.com/ssltest/">https://www.ssllabs.com/ssltest/</a></div></div>
+<div id="ref-31" class="ref"><span class="index">[31]</span><div><b>MongoDB · Creación de Atlas Free en AWS</b><a class="url" href="https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-quickstart/">https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-quickstart/</a></div></div>
+</div></div>
+</main>
+<footer><span>SecureVault · Propuesta de diseño</span><span>4 / 4</span></footer>
+</section>
+</body>
+</html>

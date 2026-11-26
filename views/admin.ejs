@@ -1,0 +1,5 @@
+<%- include('header',{title:'Administración'}) %>
+<section class="scroll"><h2>Usuarios</h2><table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th></tr></thead><tbody><% for(const u of users){ %><tr><td><%= u.nombre %></td><td><%= u.correo %></td><td><%= u.rol %></td></tr><% } %></tbody></table>
+<% if(moreUsers){ %><a href="/admin?usuarios=<%= users.at(-1)._id %><%= eid ? '&eventos='+eid : '' %>">Más usuarios</a><% } %></section>
+<section class="scroll"><h2>Bitácora</h2><table><thead><tr><th>Fecha UTC</th><th>Evento</th><th>Resultado</th><th>Solicitud</th></tr></thead><tbody><% for(const e of events){ %><tr><td><%= e.ocurridoEn.toISOString() %></td><td><%= e.tipo %></td><td><%= e.resultado %></td><td><%= e.solicitudId %></td></tr><% } %></tbody></table>
+<% if(moreEvents){ %><a href="/admin?eventos=<%= events.at(-1)._id %><%= uid ? '&usuarios='+uid : '' %>">Más eventos</a><% } %></section><%- include('footer') %>

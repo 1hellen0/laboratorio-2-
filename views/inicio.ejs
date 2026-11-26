@@ -1,0 +1,6 @@
+<%- include('header',{title:'Acceso a SecureVault'}) %>
+<% if (user) { %><p>Sesión iniciada como <%= user.nombre %>.</p><p><a href="/cuenta">Abrir mi cuenta</a></p><% } %>
+<div class="columns"><section><h2>Ingresar</h2>
+<form method="post" action="/api/ingreso" data-next="/cuenta"><label>Correo <input name="correo" type="email" autocomplete="username" required></label><label>Contraseña <input name="contrasena" type="password" autocomplete="current-password" required></label><button>Ingresar</button></form></section>
+<section><h2>Crear cuenta</h2><form method="post" action="/api/registro" data-next="/"><label>Nombre <input name="nombre" maxlength="80" autocomplete="name" required></label><label>Correo <input name="correo" type="email" autocomplete="email" required></label><label>Contraseña <input name="contrasena" type="password" minlength="12" maxlength="128" autocomplete="new-password" required></label><small>12 a 128 caracteres, con tres grupos entre mayúsculas, minúsculas, números y símbolos.</small><button>Registrarme</button></form></section></div>
+<p><a href="/recuperacion">Recuperar mi contraseña</a></p><%- include('footer') %>

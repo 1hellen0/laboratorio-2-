@@ -1,0 +1,2 @@
+<%- include('header',{title:'Mi perfil'}) %><section><p>Teléfono actual: <%= mask || 'Sin registrar' %></p>
+<form method="post" action="/api/perfil" data-next="/perfil"><label>Nuevo teléfono <input name="telefono" type="tel" autocomplete="tel" required></label><button>Guardar teléfono</button></form></section><%- include('footer') %>

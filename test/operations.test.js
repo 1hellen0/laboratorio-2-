@@ -1,0 +1,66 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {fixture,password} from './fixture.js';
+import {promote} from '../src/admin.js';
+import {hashId} from '../src/security.js';
+
+test('RF-06 · vencimiento, doble canje concurrente, nuevo ingreso y revocación',async t=>{
+  const {request,register,login,db,inbox,clock,logs}=await fixture(t);
+  const correo='recuperar@example.test', next='Otro-Secreto-29741';
+  await register(correo);const cookie=await login(correo);
+  const send=async()=>{assert.equal((await request('/api/recuperacion',{body:{correo}})).status,202);return new URL(inbox.at(-1).enlace).hash.slice(1)};
+  const reset=token=>request('/api/restablecer',{body:{token,contrasena:next}});
+  const first=await send();
+  const original=await db.collection('usuarios').findOne({correo});
+  assert.equal(original.recuperacion.hashToken,hashId(first));
+  assert.equal(+original.recuperacion.expiraEn-clock.value,900000);
+  assert.ok(!JSON.stringify(original).includes(first));
+  clock.value+=900001;assert.equal((await reset(first)).status,400);
+  const previous=await send(),token=await send();
+  assert.equal((await reset(previous)).status,400);
+  const results=await Promise.all([reset(token),reset(token)]);
+  assert.deepEqual(results.map(r=>r.status).sort(),[200,400]);
+  const user=await db.collection('usuarios').findOne({correo});
+  assert.equal(user.recuperacion,undefined);assert.equal(user.versionAcceso,2);
+  assert.equal((await request('/cuenta',{cookie})).status,401);
+  assert.equal((await request('/api/ingreso',{body:{correo,contrasena:password}})).status,401);
+  assert.ok(await login(correo,next));
+  assert.ok(!logs.join('').includes(token));
+});
+test('RF-03/07/08 · rol vigente, promoción transaccional, bitácora y salud mínima',async t=>{
+  const {request,register,login,db,client,logs}=await fixture(t,{replica:true});
+  const correo='admin@example.test';
+  assert.deepEqual(await (await request('/health')).json(),{estado:'listo'});
+  assert.equal((await request('/admin')).status,401);
+  await register(correo);const old=await login(correo);
+  assert.equal((await request('/admin',{cookie:old})).status,403);
+  assert.equal(await promote(client,db,correo),true);assert.equal(await promote(client,db,correo),false);
+  assert.equal((await request('/admin',{cookie:old})).status,401);
+  const cookie=await login(correo);
+  const result=await request('/admin',{cookie});
+  assert.equal(result.status,200);
+  const html=await result.text();
+  assert.ok(html.includes('Bitácora') && html.includes('cambioRol') && html.includes(correo) && !html.includes('$argon2'));
+  assert.equal(await db.collection('eventosSeguridad').countDocuments({tipo:'cambioRol'}),1);
+  await db.collection('usuarios').updateOne({correo},{$set:{rol:'usuario'}});
+  assert.equal((await request('/admin',{cookie})).status,403);
+  assert.ok(logs.every(line=>JSON.parse(line).solicitudId));
+});
+test('bloqueo progresivo, alerta, espera y bitácora sin contenido sensible',async t=>{
+  const {request,register,login,db,clock,logs,inbox}=await fixture(t);
+  const correo='bloqueo@example.test';await register(correo);
+  const cookie=await login(correo), note='SensibleFicticio284',telefono='88883391';
+  await request('/api/notas',{cookie,body:{contenido:note}});
+  await request('/api/perfil',{cookie,body:{telefono}});
+  await request('/api/recuperacion',{body:{correo}});
+  const wrong=()=>request('/api/ingreso',{body:{correo,contrasena:'CredencialFicticiaErrada'}});
+  for(let i=0;i<4;i++)assert.equal((await wrong()).status,401);
+  const fifth=await wrong();assert.equal(fifth.status,429);assert.equal(fifth.headers.get('retry-after'),'60');
+  clock.value+=60001;const sixth=await wrong();assert.equal(sixth.status,429);assert.equal(sixth.headers.get('retry-after'),'120');
+  clock.value+=120001;assert.ok(await login(correo));
+  const events=await db.collection('eventosSeguridad').find().toArray();
+  assert.equal(events.filter(e=>e.tipo==='alertaIngreso').length,1);
+  const serialized=JSON.stringify(events)+logs.join('');
+  for(const secret of [correo,password,'CredencialFicticiaErrada',cookie,telefono,note,new URL(inbox[0].enlace).hash.slice(1)])
+    assert.ok(!serialized.includes(secret));
+});
