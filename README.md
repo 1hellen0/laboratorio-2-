@@ -52,7 +52,7 @@ La prueba de administración usa un replica set efímero local, necesario para p
 | `PORT` | Puerto de Express, predeterminado 3000. |
 | `NODE_ENV` | Use `production` para Secure cookies, HTTPS y política de producción. |
 | `TRUST_PROXY_HOPS` | 0 en local y 1 solo detrás del proxy verificado de Render. |
-| `RESEND_API_KEY`, `MAIL_FROM` | Envío de recuperación en producción mediante Resend. No requeridos en local. |
+| `MAILERSEND_API_KEY`, `MAILERSEND_FROM` | Envío de recuperación en producción mediante la API de MailerSend. No requeridos en local. En Sandbox, `MAILERSEND_FROM` debe usar el dominio de prueba que muestra MailerSend. |
 | `MONGODB_ADMIN_URI` | Credencial de mantenimiento separada para `npm run admin -- correo`. |
 
 El script genera las llaves aleatorias con `crypto.randomBytes(32).toString('base64')`. Para generar una sin cambiar `.env`:
@@ -120,9 +120,9 @@ El Blueprint crea `DATA_ENCRYPTION_KEY`, `SESSION_SECRET` y `RATE_LIMIT_SECRET` 
 | `DATA_ENCRYPTION_KEY`, `SESSION_SECRET`, `RATE_LIMIT_SECRET` | Render los genera en el primer Blueprint y conserva entre despliegues; respalda la llave de cifrado de forma cifrada y restringida. |
 | `APP_ORIGIN` | Opcional en Render; si falta, se usa `RENDER_EXTERNAL_URL`. En local usa `.env`. |
 | `MONGODB_ADMIN_URI` | URI de cuenta Atlas con `dbAdmin` y `securevaultAdminMaintenance`; solo consola local para inicializar o promover un usuario, nunca el servicio web. |
-| `RESEND_API_KEY`, `MAIL_FROM` | Opcionales mientras se evalúan registro, notas e ingreso. Para habilitar recuperación, agrega la clave de Resend y un remitente de un dominio verificado en Render Environment. |
+| `MAILERSEND_API_KEY`, `MAILERSEND_FROM` | Opcionales mientras se evalúan registro, notas e ingreso. Para probar recuperación sin dominio propio, crea MailerSend en modo Sandbox sin iniciar la prueba Professional ni activar un plan. Genera un token con permiso Email para el dominio de prueba y usa como remitente una dirección de ese dominio (por ejemplo, `hello@<dominio-de-prueba>`). En Render → Environment agrega `MAILERSEND_API_KEY` como secreto y `MAILERSEND_FROM` como dirección remitente. El Sandbox permite hasta 100 emails/mes y 100 solicitudes API/día; el dominio de prueba permite hasta dos destinatarios únicos. |
 
-La revisión local encontró `.env` con variables de aplicación, pero sin `RESEND_API_KEY` ni `MAIL_FROM`; eso no confirma si existen en el panel de Resend. Sin ambas variables y un remitente habilitado, el servicio inicia, pero el correo de recuperación no se entrega. Resend solo puede comprobarse tras configurar y verificar el dominio/remitente y probar un envío.
+MailerSend documenta que Sandbox no tiene plazo de expiración y que el dominio de prueba funciona sin verificar dominio propio. Permite enviar a dos destinatarios únicos antes de aprobar la cuenta; al aprobarla, el cupo mensual sigue siendo 100 y se puede enviar a cualquier destinatario. Usa el buzón controlado por el equipo como uno de los dos destinatarios. El servicio inicia sin estas variables, pero la recuperación no entrega correo hasta que ambas estén configuradas. No pulses “Start Professional trial”, no agregues datos de pago ni selecciones un plan. La prueba completa de recuperación debe confirmar recepción, vencimiento y rechazo del segundo uso; el dominio compartido es solo de evaluación, tiene restricciones por destinatarios y no es una opción de correo productivo estable.
 
 ## Rutas
 
