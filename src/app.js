@@ -16,7 +16,7 @@ export async function createApp({db, reader = db, config, now = () => new Date()
   app.set('view engine','ejs');
   app.set('views',fileURLToPath(new URL('../views/',import.meta.url)));
   app.use(helmet({contentSecurityPolicy:{directives:{
-    defaultSrc:["'self'"], scriptSrc:["'self'"], styleSrc:["'self'"], formAction:["'self'"], frameAncestors:["'none'"],
+    defaultSrc:["'self'"], scriptSrc:["'self'"], styleSrc:["'self'"], fontSrc:["'self'"], formAction:["'self'"], frameAncestors:["'none'"],
     upgradeInsecureRequests: config.prod ? [] : null
   }},strictTransportSecurity:config.prod ? undefined : false,referrerPolicy:{policy:'no-referrer'}}));
   app.use('/static',express.static(fileURLToPath(new URL('../public/',import.meta.url)),{index:false}));
