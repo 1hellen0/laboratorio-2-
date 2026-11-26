@@ -25,12 +25,15 @@ export function recoveryRoutes({app,db,now,config,deliver,event,limits}) {
     function invalid(){fail(400,'Enlace inválido o vencido.');}
     if(!/^[\w-]{43}$/.test(token) || Buffer.from(token,'base64url').toString('base64url')!==token) invalid();
     const hashToken=hashId(token);
-    const filter=()=>({'recuperacion.hashToken':hashToken,'recuperacion.expiraEn':{$gt:now()}});
-    const target=await users.findOne(filter(),{projection:{_id:1}});
+    const target=await users.findOne({'recuperacion.hashToken':hashToken,
+      'recuperacion.expiraEn':{$gt:now()}},{projection:{_id:1}});
     if(!target) invalid();
     policy(contrasena);
     const hashContrasena=await hashPassword(contrasena);
-    const result=await users.updateOne({_id:target._id,...filter(),$expr:{$gt:['$recuperacion.expiraEn','$$NOW']}},
+    // Use the same application clock used to create expiraEn. Mixing Render's
+    // clock with MongoDB's $$NOW can reject a fresh token if the hosts drift.
+    const result=await users.updateOne({_id:target._id,'recuperacion.hashToken':hashToken,
+      'recuperacion.expiraEn':{$gt:now()}},
       {$set:{hashContrasena},$unset:{recuperacion:''},$inc:{versionAcceso:1}});
     if(!result.modifiedCount) invalid();
     await event(req,'recuperacion','correcto',target._id);

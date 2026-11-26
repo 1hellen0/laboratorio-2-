@@ -27,6 +27,22 @@ test('RF-06 · vencimiento, doble canje concurrente, nuevo ingreso y revocación
   assert.ok(await login(correo,next));
   assert.ok(!logs.join('').includes(token));
 });
+
+test('RF-06 · valida vencimiento con el mismo reloj que emitió el enlace',async t=>{
+  const {request,register,db,inbox,clock}=await fixture(t);
+  // Simula que el reloj de MongoDB va una hora por delante del proceso web.
+  // El vencimiento se crea y valida con el reloj del proceso, no con $$NOW.
+  clock.value-=60*60*1000;
+  const correo='reloj@example.test';await register(correo);
+  assert.equal((await request('/api/recuperacion',{body:{correo}})).status,202);
+  const link=new URL(inbox.at(-1).enlace);
+  const token=link.hash.slice(1);
+  assert.match(token,/^[\w-]{43}$/);
+  const user=await db.collection('usuarios').findOne({correo});
+  assert.equal(+user.recuperacion.expiraEn-clock.value,900000);
+  assert.equal((await request('/api/restablecer',{body:{token,contrasena:'Otro-Secreto-29741'}})).status,200);
+});
+
 test('RF-03/07/08 · rol vigente, promoción transaccional, bitácora y salud mínima',async t=>{
   const {request,register,login,db,client,logs}=await fixture(t,{replica:true});
   const correo='admin@example.test';
